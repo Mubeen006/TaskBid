@@ -1,4 +1,5 @@
 const tasksRepository = require("./tasks.repository");
+const bidsRepository = require("../bids/bids.repository");
 const { isLegalForwardTransition } = require("../../utils/statusSequence");
 const { NotFoundError, ConflictError } = require("../../errors/domainErrors");
 
@@ -33,7 +34,18 @@ async function updateTaskStatus(taskId, targetStatus) {
 }
 
 async function listTasks(filter = {}) {
-  return tasksRepository.findAll(filter);
+  const tasks = await tasksRepository.findAll(filter);
+  const taskIds = tasks.map((task) => String(task._id));
+  const summaryMap = await bidsRepository.getBidSummaryForTasks(taskIds);
+
+  return tasks.map((task) => {
+    const summary = summaryMap[String(task._id)] || { count: 0, lowestHours: null };
+    return {
+      ...task,
+      bidCount: summary.count,
+      lowestBidHours: summary.lowestHours,
+    };
+  });
 }
 
 module.exports = { createTask, updateTaskStatus, listTasks };

@@ -6,6 +6,7 @@ const config = require("./config");
 const { isDBConnected } = require("./db/connection");
 const usersRouter = require("./modules/users/users.controller");
 const tasksRouter = require("./modules/tasks/tasks.controller");
+const bidsRouter = require("./modules/bids/bids.controller");
 
 function createApp() {
   const app = express();
@@ -24,6 +25,7 @@ function createApp() {
 
   app.use("/api/users", usersRouter);
   app.use("/api/tasks", tasksRouter);
+  app.use("/api/tasks/:id/bids", bidsRouter);
 
   app.use((req, res) => {
     res.status(404).json({ error: { code: "NOT_FOUND", message: "Route not found" } });
