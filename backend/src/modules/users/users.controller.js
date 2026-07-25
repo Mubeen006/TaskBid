@@ -5,6 +5,15 @@ const { userIdParamSchema } = require("./users.schema");
 
 const router = Router();
 
+router.get("/", async (req, res, next) => {
+  try {
+    const users = await usersService.listUsers();
+    return res.status(200).json(users);
+  } catch (err) {
+    return next(err);
+  }
+});
+
 router.get("/:id/workload", validate(userIdParamSchema, "params"), async (req, res, next) => {
   try {
     const data = await usersService.getWorkload(req.params.id);

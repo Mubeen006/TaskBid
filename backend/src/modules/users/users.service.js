@@ -2,6 +2,10 @@ const usersRepository = require("./users.repository");
 const { getRemainingCapacity } = require("../../utils/capacity");
 const { NotFoundError } = require("../../errors/domainErrors");
 
+async function listUsers() {
+  return usersRepository.findAll();
+}
+
 async function getWorkload(userId) {
   const user = await usersRepository.findById(userId);
 
@@ -17,4 +21,4 @@ async function getWorkload(userId) {
   };
 }
 
-module.exports = { getWorkload };
+module.exports = { listUsers, getWorkload };

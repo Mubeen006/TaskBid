@@ -95,6 +95,34 @@ const options = {
           },
         },
       },
+      "/api/users": {
+        get: {
+          tags: ["Users"],
+          summary: "List all users",
+          description:
+            "Returns id + name for every user. Added pragmatically for the frontend user-switcher (Feature 12) — not originally specced; flagged in TRACKING.md as an unspecced addition pending architect sign-off.",
+          responses: {
+            200: {
+              description: "Array of users",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        _id:   { type: "string" },
+                        name:  { type: "string" },
+                        email: { type: "string" },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
       "/api/users/{id}/workload": {
         get: {
           tags: ["Users"],
