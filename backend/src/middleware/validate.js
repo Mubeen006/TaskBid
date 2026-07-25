@@ -2,7 +2,10 @@ const { ValidationError } = require("../errors/domainErrors");
 
 function validate(schema, target = "body") {
   return (req, res, next) => {
-    const { error, value } = schema.validate(req[target], { abortEarly: false });
+    const { error, value } = schema.validate(req[target], {
+      abortEarly: false,
+      stripUnknown: true,
+    });
 
     if (error) {
       return next(new ValidationError("Validation failed", error.details));

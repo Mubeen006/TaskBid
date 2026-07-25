@@ -10,7 +10,7 @@
 | 03 | Seed Script | `docs/features/03-seed-script.md` | TESTED — READY FOR COMMIT | Seed rewritten with correct pattern: tasks start 'open', Bid.create() while open, status advanced via setStatus()+save(). All 7 statuses covered incl. review. 5 users / 10 tasks / 15 bids. Idempotent (ran twice, same result). | Race-condition test task: 'Migrate legacy auth module' (bidding_closed), lowest bidder Bilal (2h) — a near-capacity user, confirmed suitable for Feature 09's Part-A test. Near-capacity users: Bilal (13/15h), Usman (8/10h). |
 | 04 | Validation Schemas (Joi, shared middleware) | `docs/features/04-validation.md` | TESTED — READY FOR COMMIT | validate middleware (abortEarly:false, coerces req[target]), currentUser middleware (missing/malformed/nonexistent → 400), objectIdSchema util, tasks.schema.js, bids.schema.js, users.schema.js. mongoSanitize already wired in app.js. 11/11 self-tests pass. | No deviations from Blueprint Phase 5/13. |
 | 05 | Users Module (workload endpoint) | `docs/features/05-users-module.md` | TESTED — READY FOR COMMIT | capacity.js (getRemainingCapacity, hasCapacityFor — pure, no DB), users.repository.js, users.service.js, users.controller.js. GET /api/users/:id/workload mounted. 8/8 capacity unit tests pass. Live endpoint: valid→200, nonexistent→404, malformed→400. | No deviations. ESLint clean (0 errors). |
-| 06 | Tasks Module (create, status transition, list) | `docs/features/06-tasks-module.md` | NOT STARTED | — | — |
+| 06 | Tasks Module (create, status transition, list) | `docs/features/06-tasks-module.md` | TESTED — READY FOR COMMIT | tasks.repository/service/controller. POST /api/tasks, PATCH /api/tasks/:id/status, GET /api/tasks (+ optional ?status= filter). Mounted in app.js. Service-level isLegalForwardTransition check + setStatus()+save(). 8/8 self-tests pass. | Option (a) for GET — no bid-count/lowest-bid yet (revisit Feature 07). No GET /api/tasks/:id (list sufficient for now; add in Feature 14 if detail page needs it). Audit-log wiring deferred to Feature 08. Minor fix: added stripUnknown:true to validate middleware so POST ignores extraneous body fields (status/createdBy) per acceptance criteria. |
 | 07 | Bids Module (place bid, list bids) | `docs/features/07-bids-module.md` | NOT STARTED | — | — |
 | 08 | Audit Log Module | `docs/features/08-audit-module.md` | NOT STARTED | — | — |
 | 09 | Assignment Engine (transaction + optimistic concurrency) | `docs/features/09-assignment-engine.md` | NOT STARTED | — | — |
@@ -29,7 +29,7 @@
 ---
 
 ## Current Focus
-**Feature #05 — TESTED — READY FOR COMMIT.** Next: Feature 06 (Tasks Module).
+**Feature #06 — TESTED — READY FOR COMMIT.** Next: Feature 07 (Bids Module).
 
 ## Blocked Items
 None.
