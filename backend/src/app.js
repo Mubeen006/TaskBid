@@ -8,6 +8,7 @@ const usersRouter = require("./modules/users/users.controller");
 const tasksRouter = require("./modules/tasks/tasks.controller");
 const bidsRouter = require("./modules/bids/bids.controller");
 const assignmentRouter = require("./modules/assignment/assignment.controller");
+const dashboardRouter = require("./modules/dashboard/dashboard.controller");
 
 function createApp() {
   const app = express();
@@ -28,6 +29,7 @@ function createApp() {
   app.use("/api/tasks", tasksRouter);
   app.use("/api/tasks/:id/bids", bidsRouter);
   app.use("/api/tasks", assignmentRouter);
+  app.use("/api/dashboard", dashboardRouter);
 
   app.use((req, res) => {
     res.status(404).json({ error: { code: "NOT_FOUND", message: "Route not found" } });
