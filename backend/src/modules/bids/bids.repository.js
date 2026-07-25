@@ -5,8 +5,10 @@ async function create(data) {
   return Bid.create(data);
 }
 
-async function findByTaskId(taskId) {
-  return Bid.find({ task: taskId }).sort({ hoursOffered: 1 }).lean();
+async function findByTaskId(taskId, session) {
+  const query = Bid.find({ task: taskId }).sort({ hoursOffered: 1 }).lean();
+  if (session) query.session(session);
+  return query;
 }
 
 async function getBidSummaryForTasks(taskIds) {
