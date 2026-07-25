@@ -33,7 +33,8 @@ router.patch(
     try {
       const task = await tasksService.updateTaskStatus(
         req.params.id,
-        req.body.targetStatus
+        req.body.targetStatus,
+        req.currentUser._id
       );
       return res.status(200).json(task);
     } catch (err) {

@@ -1,3 +1,5 @@
+const mongoose = require("mongoose");
+const Bid = require("./bids.model");
 const tasksRepository = require("../tasks/tasks.repository");
 const bidsRepository = require("./bids.repository");
 const { hasCapacityFor } = require("../../utils/capacity");
@@ -7,6 +9,7 @@ const {
   ConflictError,
   UnprocessableError,
 } = require("../../errors/domainErrors");
+const { recordChange } = require("../audit/audit.service");
 
 function translateBidCreateError(err) {
   if (err.code === 11000) {
@@ -35,14 +38,37 @@ async function placeBid(taskId, hoursOffered, currentUser) {
     throw new UnprocessableError("This exceeds your remaining capacity");
   }
 
+  const session = await mongoose.startSession();
   try {
-    return await bidsRepository.create({
-      task: taskId,
-      user: currentUser._id,
-      hoursOffered,
+    session.startTransaction();
+
+    let bid;
+    try {
+      [bid] = await Bid.create(
+        [{ task: taskId, user: currentUser._id, hoursOffered }],
+        { session }
+      );
+    } catch (err) {
+      translateBidCreateError(err);
+    }
+
+    await recordChange({
+      entityType: "bid",
+      entityId: bid._id,
+      actorUserId: currentUser._id,
+      fieldChanged: null,
+      oldValue: null,
+      newValue: { hoursOffered: bid.hoursOffered, status: bid.status },
+      session,
     });
+
+    await session.commitTransaction();
+    return bid;
   } catch (err) {
-    translateBidCreateError(err);
+    await session.abortTransaction();
+    throw err;
+  } finally {
+    session.endSession();
   }
 }
 

@@ -72,9 +72,10 @@ bidSchema.pre("findOneAndUpdate", async function guardSelfBidAndBiddingOpenQuery
   }
 
   const Task = mongoose.model("Task");
+  const session = this.getOptions().session || null;
 
   try {
-    await runSelfBidAndOpenCheck(taskId, userId, Task, null);
+    await runSelfBidAndOpenCheck(taskId, userId, Task, session);
     return next();
   } catch (err) {
     return next(err);

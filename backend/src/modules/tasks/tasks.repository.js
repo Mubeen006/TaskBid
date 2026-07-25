@@ -4,8 +4,9 @@ async function create(data) {
   return Task.create(data);
 }
 
-async function findById(id) {
-  return Task.findById(id);
+async function findById(id, session) {
+  const options = session ? { session } : {};
+  return Task.findById(id, null, options);
 }
 
 async function findAll(filter = {}) {

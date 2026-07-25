@@ -1,11 +1,13 @@
+const mongoose = require("mongoose");
 const tasksRepository = require("./tasks.repository");
 const bidsRepository = require("../bids/bids.repository");
 const { isLegalForwardTransition } = require("../../utils/statusSequence");
 const { NotFoundError, ConflictError } = require("../../errors/domainErrors");
+const { recordChange } = require("../audit/audit.service");
 
 async function createTask(body, currentUserId) {
   const { title, description, complexity, deadline } = body;
-  return tasksRepository.create({
+  const task = await tasksRepository.create({
     title,
     description,
     complexity,
@@ -13,24 +15,58 @@ async function createTask(body, currentUserId) {
     createdBy: currentUserId,
     status: "draft",
   });
+
+  await recordChange({
+    entityType: "task",
+    entityId: task._id,
+    actorUserId: currentUserId,
+    fieldChanged: null,
+    oldValue: null,
+    newValue: { title: task.title, status: task.status },
+  });
+
+  return task;
 }
 
-async function updateTaskStatus(taskId, targetStatus) {
-  const task = await tasksRepository.findById(taskId);
+async function updateTaskStatus(taskId, targetStatus, currentUserId) {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
 
-  if (!task) {
-    throw new NotFoundError("Task not found");
+    const task = await tasksRepository.findById(taskId, session);
+
+    if (!task) {
+      throw new NotFoundError("Task not found");
+    }
+
+    if (!isLegalForwardTransition(task.status, targetStatus)) {
+      throw new ConflictError(
+        `Cannot move task status from "${task.status}" to "${targetStatus}"`
+      );
+    }
+
+    const previousStatus = task.status;
+    task.setStatus(targetStatus);
+    await task.save({ session });
+
+    await recordChange({
+      entityType: "task",
+      entityId: task._id,
+      actorUserId: currentUserId,
+      fieldChanged: "status",
+      oldValue: previousStatus,
+      newValue: targetStatus,
+      session,
+    });
+
+    await session.commitTransaction();
+    return task;
+  } catch (err) {
+    await session.abortTransaction();
+    throw err;
+  } finally {
+    session.endSession();
   }
-
-  if (!isLegalForwardTransition(task.status, targetStatus)) {
-    throw new ConflictError(
-      `Cannot move task status from "${task.status}" to "${targetStatus}"`
-    );
-  }
-
-  task.setStatus(targetStatus);
-  await task.save();
-  return task;
 }
 
 async function listTasks(filter = {}) {
