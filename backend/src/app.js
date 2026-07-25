@@ -4,6 +4,7 @@ const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const config = require("./config");
 const { isDBConnected } = require("./db/connection");
+const usersRouter = require("./modules/users/users.controller");
 
 function createApp() {
   const app = express();
@@ -19,6 +20,8 @@ function createApp() {
     }
     return res.status(503).json({ status: "unavailable" });
   });
+
+  app.use("/api/users", usersRouter);
 
   app.use((req, res) => {
     res.status(404).json({ error: { code: "NOT_FOUND", message: "Route not found" } });
