@@ -8,7 +8,7 @@
 | 01 | Project Setup (repo, Docker Compose w/ replica set, env config) | `docs/features/01-project-setup.md` | TESTED — READY FOR COMMIT | Replica set confirmed ok:1 (healthcheck auto-init). Backend Express skeleton + /health route. Deps installed, .env from .env.example. | Replica-set initiation is automatic via Docker Compose healthcheck — no manual step needed. |
 | 02 | Database Schema (Mongoose models: users, tasks, bids, auditlogs) | `docs/features/02-database-schema.md` | TESTED — READY FOR COMMIT | All 4 models + guard hooks implemented. Added pre('findOneAndUpdate') guard to both Task and Bid models (Feature 02 updated spec). 4 migrations applied. Indexes verified via mongosh. | Only 1 of 5 constraints (bid unique index) is true DB-engine-level. Guard hooks now cover both pre('save') and pre('findOneAndUpdate'). **Known minor gap (accepted, non-blocking):** see deviations log below. |
 | 03 | Seed Script | `docs/features/03-seed-script.md` | TESTED — READY FOR COMMIT | Seed rewritten with correct pattern: tasks start 'open', Bid.create() while open, status advanced via setStatus()+save(). All 7 statuses covered incl. review. 5 users / 10 tasks / 15 bids. Idempotent (ran twice, same result). | Race-condition test task: 'Migrate legacy auth module' (bidding_closed), lowest bidder Bilal (2h) — a near-capacity user, confirmed suitable for Feature 09's Part-A test. Near-capacity users: Bilal (13/15h), Usman (8/10h). |
-| 04 | Validation Schemas (Joi, shared middleware) | `docs/features/04-validation.md` | NOT STARTED | — | — |
+| 04 | Validation Schemas (Joi, shared middleware) | `docs/features/04-validation.md` | TESTED — READY FOR COMMIT | validate middleware (abortEarly:false, coerces req[target]), currentUser middleware (missing/malformed/nonexistent → 400), objectIdSchema util, tasks.schema.js, bids.schema.js, users.schema.js. mongoSanitize already wired in app.js. 11/11 self-tests pass. | No deviations from Blueprint Phase 5/13. |
 | 05 | Users Module (workload endpoint) | `docs/features/05-users-module.md` | NOT STARTED | — | — |
 | 06 | Tasks Module (create, status transition, list) | `docs/features/06-tasks-module.md` | NOT STARTED | — | — |
 | 07 | Bids Module (place bid, list bids) | `docs/features/07-bids-module.md` | NOT STARTED | — | — |
@@ -29,7 +29,7 @@
 ---
 
 ## Current Focus
-**Features #01–#03 are TESTED — READY FOR COMMIT.** Next: Feature 04 (Validation Schemas — Joi).
+**Feature #04 — TESTED — READY FOR COMMIT.** Next: Feature 05 (Users Module — workload endpoint).
 
 ## Blocked Items
 None.
