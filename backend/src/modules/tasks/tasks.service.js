@@ -47,7 +47,16 @@ async function updateTaskStatus(taskId, targetStatus, currentUserId) {
 
     const previousStatus = task.status;
     task.setStatus(targetStatus);
-    await task.save({ session });
+    try {
+      await task.save({ session });
+    } catch (err) {
+      if (err.isGuardViolation === true) {
+        throw new ConflictError(
+          `Cannot move task status from "${previousStatus}" to "${targetStatus}"`
+        );
+      }
+      throw err;
+    }
 
     await recordChange({
       entityType: "task",

@@ -2,8 +2,10 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
+const swaggerUi = require("swagger-ui-express");
 const config = require("./config");
 const { isDBConnected } = require("./db/connection");
+const swaggerSpec = require("./docs/swagger");
 const usersRouter = require("./modules/users/users.controller");
 const tasksRouter = require("./modules/tasks/tasks.controller");
 const bidsRouter = require("./modules/bids/bids.controller");
@@ -17,6 +19,8 @@ function createApp() {
   app.use(cors({ origin: config.corsOrigin }));
   app.use(express.json());
   app.use(mongoSanitize());
+
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
   app.get("/health", (req, res) => {
     if (isDBConnected()) {

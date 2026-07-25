@@ -60,9 +60,9 @@ taskSchema.pre("save", function guardForwardOnlyStatus(next) {
   }
 
   if (!isLegalForwardTransition(previousStatus, this.status)) {
-    return next(
-      new Error(`Application-layer guard: cannot move task status from "${previousStatus}" to "${this.status}"`)
-    );
+    const err = new Error(`Application-layer guard: cannot move task status from "${previousStatus}" to "${this.status}"`);
+    err.isGuardViolation = true;
+    return next(err);
   }
 
   return next();
@@ -82,9 +82,9 @@ taskSchema.pre("findOneAndUpdate", async function guardForwardOnlyStatusQuery(ne
   }
 
   if (!isLegalForwardTransition(current.status, newStatus)) {
-    return next(
-      new Error(`Application-layer guard: cannot move task status from "${current.status}" to "${newStatus}"`)
-    );
+    const err = new Error(`Application-layer guard: cannot move task status from "${current.status}" to "${newStatus}"`);
+    err.isGuardViolation = true;
+    return next(err);
   }
 
   return next();
