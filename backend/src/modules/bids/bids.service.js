@@ -10,6 +10,8 @@ const {
   UnprocessableError,
 } = require("../../errors/domainErrors");
 const { recordChange } = require("../audit/audit.service");
+const { getIO } = require("../../realtime/socket");
+const { BID_CREATED } = require("../../realtime/events");
 
 function translateBidCreateError(err) {
   if (err.code === 11000) {
@@ -63,6 +65,19 @@ async function placeBid(taskId, hoursOffered, currentUser) {
     });
 
     await session.commitTransaction();
+
+    const io = getIO();
+    if (io) {
+      io.to(`task:${taskId}`).emit(BID_CREATED, {
+        _id: bid._id,
+        task: bid.task,
+        user: bid.user,
+        hoursOffered: bid.hoursOffered,
+        status: bid.status,
+        createdAt: bid.createdAt,
+      });
+    }
+
     return bid;
   } catch (err) {
     await session.abortTransaction();

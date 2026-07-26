@@ -1,6 +1,8 @@
+const http = require("http");
 const config = require("./config");
 const { connectDB } = require("./db/connection");
 const createApp = require("./app");
+const { initSocket } = require("./realtime/socket");
 
 async function start() {
   try {
@@ -11,8 +13,10 @@ async function start() {
   }
 
   const app = createApp();
+  const httpServer = http.createServer(app);
+  initSocket(httpServer);
 
-  app.listen(config.port, () => {
+  httpServer.listen(config.port, () => {
     console.log(`TaskBid backend listening on port ${config.port}`);
   });
 }

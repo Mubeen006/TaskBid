@@ -5,6 +5,8 @@ const bidsRepository = require("../bids/bids.repository");
 const assignmentRepository = require("./assignment.repository");
 const { hasCapacityFor } = require("../../utils/capacity");
 const { recordChange } = require("../audit/audit.service");
+const { getIO } = require("../../realtime/socket");
+const { TASK_ASSIGNED } = require("../../realtime/events");
 const {
   NotFoundError,
   ConflictError,
@@ -128,6 +130,17 @@ async function assignTask(taskId, actorUserId) {
       }
 
       await session.commitTransaction();
+
+      const io = getIO();
+      if (io) {
+        io.to(`task:${taskId}`).emit(TASK_ASSIGNED, {
+          taskId,
+          assignedUserId: result.assignedUserId,
+          assignedBidId: result.assignedBidId,
+          status: "assigned",
+        });
+      }
+
       return result;
     } catch (err) {
       await session.abortTransaction();

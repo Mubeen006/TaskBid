@@ -10,6 +10,8 @@ import StatusBadge from "../features/tasks/StatusBadge";
 import BidList from "../features/bids/BidList";
 import BidForm from "../features/bids/BidForm";
 
+import { useRealtimeBids } from "../realtime/useRealtimeBids";
+
 const STATUS_SEQUENCE = ["draft","open","bidding_closed","assigned","in_progress","review","done"];
 
 const pageStyle = { maxWidth: "720px" };
@@ -106,6 +108,8 @@ export default function TaskDetailPage() {
   const { data: bids, isLoading: bidsLoading } = useBids(id);
   const assignTask = useAssignTask(id);
   const advanceStatus = useAdvanceStatus(id);
+
+  useRealtimeBids(id);
 
   const [assignFeedback, setAssignFeedback] = useState(null);
   const [statusFeedback, setStatusFeedback] = useState(null);
