@@ -6,7 +6,10 @@ async function create(data) {
 }
 
 async function findByTaskId(taskId, session) {
-  const query = Bid.find({ task: taskId }).sort({ hoursOffered: 1 }).lean();
+  const query = Bid.find({ task: taskId })
+    .populate("user", "name")
+    .sort({ hoursOffered: 1 })
+    .lean();
   if (session) query.session(session);
   return query;
 }

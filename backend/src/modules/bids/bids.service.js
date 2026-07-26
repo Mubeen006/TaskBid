@@ -68,13 +68,14 @@ async function placeBid(taskId, hoursOffered, currentUser) {
 
     const io = getIO();
     if (io) {
+      const populatedBid = await bid.populate("user", "name");
       io.to(`task:${taskId}`).emit(BID_CREATED, {
-        _id: bid._id,
-        task: bid.task,
-        user: bid.user,
-        hoursOffered: bid.hoursOffered,
-        status: bid.status,
-        createdAt: bid.createdAt,
+        _id: populatedBid._id,
+        task: populatedBid.task,
+        user: populatedBid.user,
+        hoursOffered: populatedBid.hoursOffered,
+        status: populatedBid.status,
+        createdAt: populatedBid.createdAt,
       });
     }
 

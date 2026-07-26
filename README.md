@@ -14,7 +14,11 @@ One assumption that underlies this conversion deserves explicit surfacing: the o
 
 ## Live URL
 
-> **To be added after Feature 19 (Deployment) is complete.** Feature 19 — MongoDB Atlas + Render + Vercel deployment — has not yet been executed. No URL exists at this time.
+**Frontend (Vercel):** https://task-bid-mocha.vercel.app
+
+**Backend API + Swagger UI (Railway):** https://taskbid-production-ebb6.up.railway.app
+
+Swagger UI is reachable at https://taskbid-production-ebb6.up.railway.app/api-docs
 
 ---
 
@@ -274,12 +278,41 @@ Every feature completed a self-test checklist before being marked `TESTED — RE
 
 ## Deployment
 
-> **Planned, not yet executed.** Feature 19 (Deployment) has not run. The section below describes the planned deployment target as documented in Architecture Blueprint Phase 20. It will need a short follow-up edit once Feature 19 actually completes — live URLs, any discovered configuration changes, and confirmation that transactions work against the Atlas-hosted replica set specifically should be added at that point.
+The live system runs on three services:
 
-**Planned targets:**
-- **Database:** MongoDB Atlas (M0 free tier). Atlas provisions a replica set by default on the free tier, so multi-document transactions are supported without any additional configuration — unlike local dev, which requires the explicit Docker Compose replica-set setup described above.
-- **Backend:** Render (Node.js web service, free tier). Environment variables (`MONGODB_URI` pointing at Atlas, `CORS_ORIGIN` pointing at the Vercel frontend URL, `NODE_ENV=production`) will be set in the Render dashboard.
-- **Frontend:** Vercel (static/SPA deployment, free tier). `VITE_API_URL` and `VITE_SOCKET_URL` will point at the Render backend URL.
+| Layer | Service | URL |
+|---|---|---|
+| Database | MongoDB Atlas M0 (free tier, 3-node replica set) | `taskbid.uncfmzd.mongodb.net` |
+| Backend | Railway (Node.js web service) | https://taskbid-production-ebb6.up.railway.app |
+| Frontend | Vercel (SPA) | https://task-bid-mocha.vercel.app |
+
+**Atlas M0** was chosen because its free tier ships as a 3-node replica set by default, which means multi-document transactions work without any manual configuration — unlike local Docker Compose, which required explicit replica-set initialisation via the healthcheck. The Atlas network access policy is set to allow from anywhere (`0.0.0.0/0`). This is a deliberate simplification documented here per the Feature 19 spec's explicit guidance: it is acceptable for a time-boxed assessment but would be replaced by a scoped IP allowlist or VPC peering in a production environment with real data.
+
+**Railway** was used in place of the originally planned Render deployment. The project owner made this choice. All environment variables (`MONGODB_URI` pointing at Atlas, `CORS_ORIGIN=https://task-bid-mocha.vercel.app`, `NODE_ENV=production`) are set in Railway's dashboard. The `CORS_ORIGIN` is a specific origin (not wildcard) — the backend's `socket.js` uses `origin: "*"` only when `NODE_ENV=development`, confirmed correct.
+
+**Vercel** hosts the frontend SPA. `VITE_API_URL` and `VITE_SOCKET_URL` are set in Vercel's environment variables dashboard to point at the Railway backend URL.
+
+**What was run against Atlas before going live:**
+
+1. `migrate-mongo up` — all 4 migrations applied (users email unique index, bids compound index, tasks status/deadline indexes, auditlogs entity index). Confirmed with `migrate-mongo status`.
+2. Seed script — 5 users, 10 tasks, 15 bids created. Idempotency confirmed: second run produced identical output.
+
+**Production verification results (Feature 19 Step 5):**
+
+| Check | Result |
+|---|---|
+| `GET /health` | 200 `{"status":"ok"}` |
+| `GET /api/users` | 200 — 5 users |
+| `GET /api/tasks` | 200 — 10 tasks across 7 statuses |
+| `GET /api/dashboard/stats` | 200 — all 4 metrics |
+| `/api-docs` | 200 — Swagger UI loads |
+| Duplicate-bid → 409 CONFLICT | PASS — no raw MongoDB error leaked |
+| Self-bid → 403 FORBIDDEN | PASS |
+| Wrong-status assign → 409 CONFLICT | PASS |
+| **Live concurrency test (3 runs, Atlas replica set)** | **3/3 PASS — Bilal 13→15h, capVer+1, no overflow in any run** |
+| Cold-start behaviour | Railway free tier does not spin down; response times ~1.4s cold, ~600ms warm — no sleep/cold-start issue observed |
+
+**≥2-week stability requirement:** the Analysis Blueprint (Phase 3) requires the deployed system to remain live and functional for at least 2 weeks from the date of submission. This single deployment pass cannot certify that requirement — it confirms the system is working at deployment time. The project owner should monitor that the Railway and Vercel services remain active and that the Atlas M0 free-tier cluster is not paused due to inactivity (Atlas pauses M0 clusters after 60 days of no connections; seeding the database counts as activity).
 
 ---
 

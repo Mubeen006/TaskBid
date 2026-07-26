@@ -113,7 +113,12 @@ export default function BidForm({ task, currentUser, bids }) {
     return <p style={disabledBoxStyle}>Bidding is closed for this task (status: {task.status}).</p>;
   }
 
-  const alreadyBid = bids?.some((b) => String(b.user) === String(currentUser._id));
+  const alreadyBid = bids?.some((b) => {
+    const bidUserId = b.user && typeof b.user === "object" && b.user._id
+      ? String(b.user._id)
+      : String(b.user);
+    return bidUserId === String(currentUser._id);
+  });
   if (alreadyBid) {
     return <p style={disabledBoxStyle}>You have already placed a bid on this task.</p>;
   }

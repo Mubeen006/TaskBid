@@ -13,6 +13,13 @@ const emptyStyle = {
   padding: "8px 0",
 };
 
+function getUserId(bid) {
+  if (bid.user && typeof bid.user === "object" && bid.user._id) {
+    return String(bid.user._id);
+  }
+  return String(bid.user);
+}
+
 export default function BidList({ bids, currentUserId }) {
   if (!bids || bids.length === 0) {
     return <p style={emptyStyle}>No bids yet.</p>;
@@ -24,7 +31,7 @@ export default function BidList({ bids, currentUserId }) {
         <BidRow
           key={bid._id}
           bid={bid}
-          isCurrentUser={String(bid.user) === String(currentUserId)}
+          isCurrentUser={getUserId(bid) === String(currentUserId)}
         />
       ))}
     </div>

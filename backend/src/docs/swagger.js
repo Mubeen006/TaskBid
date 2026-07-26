@@ -1,4 +1,5 @@
 const swaggerJsdoc = require("swagger-jsdoc");
+const config = require("../config");
 
 const errorEnvelope = {
   type: "object",
@@ -25,7 +26,15 @@ const options = {
         "All mutating endpoints require X-User-Id header (simulated auth). " +
         "Error envelope shape: { error: { code, message, details? } }.",
     },
-    servers: [{ url: "http://localhost:4000" }],
+    servers: config.nodeEnv === "production"
+      ? [
+          { url: "https://taskbid-production-ebb6.up.railway.app", description: "Production (Railway)" },
+          { url: "http://localhost:4000", description: "Local development" },
+        ]
+      : [
+          { url: "http://localhost:4000", description: "Local development" },
+          { url: "https://taskbid-production-ebb6.up.railway.app", description: "Production (Railway)" },
+        ],
     components: {
       parameters: {
         XUserId: {

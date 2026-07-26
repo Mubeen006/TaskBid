@@ -47,7 +47,7 @@ export default function BidRow({ bid, isCurrentUser }) {
   return (
     <div style={{ ...rowStyle, ...(isCurrentUser ? { borderColor: "var(--accent-border)", background: "var(--accent-bg)" } : {}) }}>
       <span style={nameStyle}>
-        {isCurrentUser ? <strong>You</strong> : (bid.userName || bid.user)}
+        {isCurrentUser ? <strong>You</strong> : (bid.user?.name || bid.userName || String(bid.user?._id ?? bid.user))}
       </span>
       <span style={hoursStyle}>{bid.hoursOffered}h</span>
       <StatusChip status={bid.status} />
