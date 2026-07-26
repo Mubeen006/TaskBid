@@ -14,11 +14,11 @@ One assumption that underlies this conversion deserves explicit surfacing: the o
 
 ## Live URL
 
-**Frontend (Vercel):** https://task-bid-mocha.vercel.app
+**Frontend (Vercel):** https://task-bid-sigma.vercel.app/board
 
-**Backend API + Swagger UI (Railway):** https://taskbid-production-ebb6.up.railway.app
+**Backend API + Swagger UI (Railway):** https://taskbid-production-ffa9.up.railway.app/
 
-Swagger UI is reachable at https://taskbid-production-ebb6.up.railway.app/api-docs
+Swagger UI is reachable at https://taskbid-production-ffa9.up.railway.app/api-docs
 
 ---
 
